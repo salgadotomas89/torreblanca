@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reporte PDF</title>
+</head>
+<body>
+    <h1>Calendario de pruebas </h1>
+    <table>
+        <tr>
+            <th>curso</th>
+            <th>titulo</th>
+            <th>fecha</th>
+            <th>descripcion</th>
+
+            <!-- Agrega más columnas según tus campos de modelo -->
+        </tr>
+        {% for dato in datos %}
+            <tr>
+                <td>{{ dato.curso }}</td>
+                <td>{{ dato.titulo }}</td>
+                <td>{{ dato.fecha }}</td>
+
+                <td>{{ dato.descripcion }}</td>
+                <!-- Agrega más columnas según tus campos de modelo -->
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

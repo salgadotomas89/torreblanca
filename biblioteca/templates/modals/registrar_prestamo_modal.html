@@ -1,0 +1,85 @@
+<!-- Agregar este modal para préstamos -->
+<div class="modal fade" id="prestamoModal" tabindex="-1" aria-labelledby="prestamoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="prestamoModalLabel">Registrar Préstamo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>Información del Libro</h6>
+                        <p><strong>Título:</strong> <span id="prestamo-libro-titulo"></span></p>
+                        <p><strong>Autor:</strong> <span id="prestamo-libro-autor"></span></p>
+                        <!--se muestra solo la cantidad de ejemplares disponibles-->
+                        <p><strong>Ejemplares disponibles:</strong> <span id="prestamo-ejemplares-disponibles"></span></p>
+                    </div>
+                    <!-- select donde aparecen los ejemplares de libros disponibles-->
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="ejemplar-select" class="form-label">Seleccionar Ejemplar</label>
+                            <select class="form-control" id="ejemplar-select" required>
+                                <!-- Las opciones de libros disponibles se cargarán dinámicamente -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="alumno-search-prestamo" class="form-label">Buscar Alumno</label>
+                    <div class="input-group mb-2">
+                        <input type="text" 
+                               class="form-control" 
+                               id="alumno-search-prestamo" 
+                               name="alumno-search"
+                               autocomplete="off"
+                               placeholder="Buscar por nombre o apellido..."
+                               data-search="true">
+                        <button class="btn btn-outline-secondary" type="button" id="limpiar-busqueda">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>
+                    <div class="form-text">
+                        <i class="bi bi-info-circle"></i> Mostrando los primeros 50 alumnos. Use el buscador para filtrar.
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>Lista de Alumnos</span>
+                                    <span class="badge bg-primary" id="contador-alumnos">0 alumnos</span>
+                                </div>
+                            </div>
+                            <div id="resultados-alumnos" class="list-group list-group-flush" 
+                                 style="max-height: 300px; overflow-y: auto;">
+                                <!-- Los resultados se cargarán aquí -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="alumno-seleccionado" class="alert alert-success" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Alumno Seleccionado</h6>
+                            <p class="mb-0" id="alumno-nombre"></p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-success" onclick="cancelarSeleccionAlumno()">
+                            <i class="bi bi-person-x"></i> Cambiar alumno
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="registrarPrestamo()" id="btn-registrar-prestamo" disabled>
+                    Registrar Préstamo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

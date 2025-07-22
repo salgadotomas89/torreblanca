@@ -1,0 +1,417 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="text-center">
+                <h1 class="display-4 mb-3">
+                    <i class="bi bi-trophy-fill me-3"></i>Ranking de Lectores
+                </h1>
+                <p class="lead text-muted">Descubre quiénes son los estudiantes que más libros han leído</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-funnel me-2"></i>Filtros de Búsqueda
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" id="filter-form">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label for="year" class="form-label">
+                                    <i class="bi bi-calendar-year me-1"></i>Año
+                                </label>
+                                <select class="form-select" name="year" id="year">
+                                    <option value="">Todos los años</option>
+                                    {% for year in available_years %}
+                                        <option value="{{ year }}" {% if year|stringformat:"s" == selected_year %}selected{% endif %}>
+                                            {{ year }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="month" class="form-label">
+                                    <i class="bi bi-calendar-month me-1"></i>Mes
+                                </label>
+                                <select class="form-select" name="month" id="month">
+                                    <option value="">Todos los meses</option>
+                                    {% for month_num, month_name in available_month_choices %}
+                                        <option value="{{ month_num }}" {% if month_num == selected_month %}selected{% endif %}>
+                                            {{ month_name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-grid gap-2 d-md-flex">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-search me-1"></i>Filtrar
+                                    </button>
+                                    <a href="{% url 'ranking_lectores' %}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Summary -->
+
+<!-- Stats Summary con 6 columnas en 2 filas -->
+{% if ranking_data %}
+<div class="row mb-4">
+    <!-- Primera fila - 3 columnas -->
+    <div class="col-md-4">
+        <div class="card border-0 bg-primary text-white shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-book-half display-5 mb-3"></i>
+                <h4 class="card-title">{{ estudiantes_leyendo_actualmente }}</h4>
+                <p class="card-text mb-0">Leyendo Ahora</p>
+                <small class="opacity-75">Estudiantes activos</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 bg-success text-white shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-book-fill display-5 mb-3"></i>
+                <h4 class="card-title">{{ ranking_data.0.libros_leidos|default:0 }}</h4>
+                <p class="card-text mb-0">Máximo Leídos</p>
+                <small class="opacity-75">Mejor estudiante</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 bg-warning text-dark shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-arrow-repeat display-5 mb-3"></i>
+                <h4 class="card-title">{{ libros_en_circulacion }}</h4>
+                <p class="card-text mb-0">En Circulación</p>
+                <small class="opacity-75">Libros prestados</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Segunda fila - 3 columnas -->
+    <div class="col-md-4">
+        <div class="card border-0 bg-info text-white shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-graph-up display-5 mb-3"></i>
+                <h4 class="card-title">{{ promedio_libros }}</h4>
+                <p class="card-text mb-0">Promedio</p>
+                <small class="opacity-75">Libros por estudiante</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 bg-danger text-white shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-trophy-fill display-5 mb-3"></i>
+                <h4 class="card-title" title="{{ libro_mas_prestado.titulo }}">
+                    {% if libro_mas_prestado.titulo|length > 15 %}
+                        {{ libro_mas_prestado.titulo|slice:":15" }}...
+                    {% else %}
+                        {{ libro_mas_prestado.titulo }}
+                    {% endif %}
+                </h4>
+                <p class="card-text mb-0">Libro Más Leído</p>
+                <small class="opacity-75">{{ libro_mas_prestado.prestamos }} veces</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 bg-secondary text-white shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-person-fill display-5 mb-3"></i>
+                <h4 class="card-title" title="{{ autor_mas_solicitado.nombre }}">
+                    {% if autor_mas_solicitado.nombre|length > 15 %}
+                        {{ autor_mas_solicitado.nombre|slice:":15" }}...
+                    {% else %}
+                        {{ autor_mas_solicitado.nombre }}
+                    {% endif %}
+                </h4>
+                <p class="card-text mb-0">Autor Más Solicitado</p>
+                <small class="opacity-75">{{ autor_mas_solicitado.prestamos }} veces</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+    <!-- Ranking Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient" style="background: linear-gradient(45deg, #dc3545, #fd7e14);">
+                    <h5 class="card-title text-white mb-0">
+                        <i class="bi bi-award me-2"></i>
+                        Ranking de Lectores
+                        {% if selected_year or selected_month %}
+                            <small class="ms-2">
+                                ({% if selected_year %}{{ selected_year }}{% endif %}
+                                {% if selected_month %} - {{ month_names.selected_month }}{% endif %})
+                            </small>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if ranking_data %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="ranking-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col" class="text-center" style="width: 80px;">
+                                            <i class="bi bi-hash text-primary"></i> Posición
+                                        </th>
+                                        <th scope="col">
+                                            <i class="bi bi-person text-primary"></i> Estudiante
+                                        </th>
+                                        <th scope="col" class="text-center" style="width: 120px;">
+                                            <i class="bi bi-mortarboard text-primary"></i> Curso
+                                        </th>
+                                        <th scope="col" class="text-center" style="width: 140px;">
+                                            <i class="bi bi-book text-primary"></i> Libros Leídos
+                                        </th>
+                                        <th scope="col" class="text-center" style="width: 120px;">
+                                            <i class="bi bi-trophy text-primary"></i> Logro
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in ranking_data %}
+                                        <tr class="ranking-row" data-position="{{ forloop.counter }}">
+                                            <td class="text-center align-middle">
+                                                <div class="position-badge">
+                                                    {% if forloop.counter == 1 %}
+                                                        <span class="badge bg-warning text-dark fs-6 position-gold">
+                                                            <i class="bi bi-trophy-fill"></i> 1°
+                                                        </span>
+                                                    {% elif forloop.counter == 2 %}
+                                                        <span class="badge bg-secondary text-white fs-6 position-silver">
+                                                            <i class="bi bi-award-fill"></i> 2°
+                                                        </span>
+                                                    {% elif forloop.counter == 3 %}
+                                                        <span class="badge bg-warning text-dark fs-6 position-bronze">
+                                                            <i class="bi bi-award"></i> 3°
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-light text-dark">{{ forloop.counter }}°</span>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle me-3">
+                                                        {{ student.alumno__nombre|first|upper }}{{ student.alumno__paterno|first|upper }}
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0 student-name">
+                                                            {{ student.alumno__nombre }} {{ student.alumno__paterno }} {{ student.alumno__materno }}
+                                                        </h6>
+                                                        <small class="text-muted">ID: {{ student.alumno__id }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                <span class="badge bg-info text-white">
+                                                    {{ student.alumno__curso__nombre|default:"Sin curso" }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                <div class="books-count">
+                                                    <span class="display-6 text-primary fw-bold">{{ student.libros_leidos }}</span>
+                                                    <div class="progress mt-1" style="height: 4px;">
+                                                        {% if ranking_data.0.libros_leidos and ranking_data.0.libros_leidos > 0 %}
+                                                            <div class="progress-bar bg-primary" role="progressbar" 
+                                                                 style="width: {% widthratio student.libros_leidos ranking_data.0.libros_leidos 100 %}%"></div>
+                                                        {% else %}
+                                                            <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                {% if student.libros_leidos >= 15 %}
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-star-fill"></i> Experto
+                                                    </span>
+                                                {% elif student.libros_leidos >= 8 %}
+                                                    <span class="badge bg-primary">
+                                                        <i class="bi bi-bookmark-star"></i> Avanzado
+                                                    </span>
+                                                {% elif student.libros_leidos >= 4 %}
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="bi bi-bookmark"></i> Intermedio
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">
+                                                        <i class="bi bi-book"></i> Principiante
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="bi bi-book text-muted" style="font-size: 4rem;"></i>
+                            </div>
+                            <h4 class="text-muted">No hay datos disponibles</h4>
+                            <p class="text-muted">
+                                No se encontraron estudiantes con libros leídos en el período seleccionado.
+                                <br>
+                                <small>Nota: Solo se consideran libros que han sido devueltos como "leídos".</small>
+                            </p>
+                            {% if not available_years %}
+                                <div class="alert alert-info mt-3" role="alert">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Los datos de lectura estarán disponibles a partir de marzo de 2025.
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom CSS -->
+<style>
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .ranking-row {
+        transition: all 0.3s ease;
+    }
+
+    .ranking-row:hover {
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .position-badge {
+        transition: transform 0.3s ease;
+    }
+
+    .ranking-row:hover .position-badge {
+        transform: scale(1.1);
+    }
+
+    .position-gold {
+        background: linear-gradient(45deg, #ffd700, #ffed4e) !important;
+        animation: gold-glow 2s ease-in-out infinite alternate;
+    }
+
+    .position-silver {
+        background: linear-gradient(45deg, #c0c0c0, #e8e8e8) !important;
+    }
+
+    .position-bronze {
+        background: linear-gradient(45deg, #cd7f32, #daa520) !important;
+    }
+
+    @keyframes gold-glow {
+        from { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+        to { box-shadow: 0 0 15px rgba(255, 215, 0, 0.8); }
+    }
+
+    .books-count {
+        transition: transform 0.3s ease;
+    }
+
+    .ranking-row:hover .books-count {
+        transform: scale(1.05);
+    }
+
+    .student-name {
+        transition: color 0.3s ease;
+    }
+
+    .ranking-row:hover .student-name {
+        color: #007bff;
+    }
+
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table-responsive {
+        border-radius: 0 0 12px 12px;
+    }
+
+    .bg-gradient {
+        border-radius: 12px 12px 0 0 !important;
+    }
+</style>
+
+<!-- Custom JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit form when filters change
+    const yearSelect = document.getElementById('year');
+    const monthSelect = document.getElementById('month');
+    
+    function autoSubmit() {
+        setTimeout(() => {
+            document.getElementById('filter-form').submit();
+        }, 100);
+    }
+    
+    if (yearSelect) {
+        yearSelect.addEventListener('change', autoSubmit);
+    }
+    
+    if (monthSelect) {
+        monthSelect.addEventListener('change', autoSubmit);
+    }
+    
+    // Add animation to ranking rows
+    const rankingRows = document.querySelectorAll('.ranking-row');
+    rankingRows.forEach((row, index) => {
+        row.style.animationDelay = `${index * 0.1}s`;
+        row.classList.add('animate__animated', 'animate__fadeInUp');
+    });
+    
+    // Add smooth scrolling
+    document.querySelector('.table-responsive').style.scrollBehavior = 'smooth';
+});
+</script>
+
+<!-- Animate.css for animations -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+{% endblock %}

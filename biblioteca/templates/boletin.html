@@ -1,0 +1,35 @@
+{% extends "index.html" %}
+
+{% load static %}
+
+
+{% block content %}
+
+    <div class="container text-left">
+        <div class="p-5 mb-4 mt-4 rounded-3">
+            <div class="container-fluid py-5">
+                <h1>Boletin Altas Cumbres</h1>
+                
+                {% if user.is_authenticated %}
+                <a href="{% url 'add_boletin' %}" class="btn btn-primary mb-3">Agregar Boletín</a>
+                {% endif %}
+                
+                <p>Un boletín escolar es una publicación periódica que se crea cada 15 días con el objetivo de mantener informada a la comunidad escolar acerca de las noticias relacionadas al colegio. En este boletín se pueden encontrar noticias sobre actividades y eventos que se han llevado a cabo en el colegio, así como también información relevante para padres y alumnos.</p>
+
+                <div class="col-md-6">
+                    <h5>Boletines año 2024</h5>
+                    <ul class="list-group">
+                        {% for boletin in boletines %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Boletín {{ boletin.fecha|date:"d M Y" }}
+                            <a href="{% url 'descargar_boletin' boletin.id %}" class="btn btn-secondary">Descargar</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

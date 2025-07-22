@@ -1,0 +1,277 @@
+{% extends "biblioteca.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container">
+    <div class="p-5 mt-4 bg-light rounded-3">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="display-5 fw-bold">Libros disponibles</h1>
+            <a href="{% url 'biblioteca' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver a biblioteca
+            </a>
+        </div>
+        <div class="alert alert-info">
+            Total de libros: <strong>{{ libros.paginator.count }}</strong>
+        </div>
+        <div class="mb-4">
+            {% csrf_token %}
+            <!--botones de acciones-->
+            <div class="d-flex align-items-center gap-2">
+                {% if user.is_authenticated %}
+                    <!--el usuario puede ingresar un libro manualmente, con los datos del libro -->
+                    <button type="button" class="btn btn-primary" onclick="mostrarModalAgregarMaterial()">
+                        <i class="bi bi-plus-circle"></i> Ingresar libro 
+                    </button>
+                    
+
+                    <button type="button" class="btn btn-info" onclick="mostrarGestionEditoriales()">
+                        Editoriales
+                    </button>
+
+                    <button type="button" class="btn btn-info" id="btn-ver-prestamos" onclick="mostrarPrestamos()">
+                        Préstamos
+                    </button>
+
+                    <button type="button" class="btn btn-info" id="btn-dewey" onclick="mostrarModalDewey()">
+                        Dewey's
+                    </button>
+
+                    <button type="button" class="btn btn-primary" onclick="mostrarEstadisticas()">
+                        <i class="bi bi-graph-up"></i> Estadísticas
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!--Cuadro de búsqueda de libros -->
+        <div class="mb-4">
+            <div class="input-group">
+                <span class="input-group-text bg-primary text-white">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="search-input" class="form-control" placeholder="Buscar por nombre, autor o descripción en TODOS los libros">
+                <button class="btn btn-outline-secondary" type="button" id="clear-search">
+                    <i class="bi bi-x-circle"></i>
+                </button>
+            </div>
+            <div class="form-text text-muted">
+                <i class="bi bi-info-circle"></i> Ingresa al menos 3 caracteres para buscar en toda la biblioteca
+            </div>
+            <!-- Añadir un atributo de datos para la autenticación -->
+            <span data-auth="{% if user.is_authenticated %}true{% else %}false{% endif %}" style="display: none;"></span>
+        </div>
+
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Autor</th>
+                        <th>Edad</th>
+                        <th>Estado</th>
+                        <th>Ejemplares</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="libros-table-body">
+                    {% for libro in libros %}
+                    <tr class="libro-row" data-libro-id="{{ libro.id }}">
+                        <td>{{ libro.titulo }}</td>
+                        <td>
+                            {% for autor in libro.autores.all %}
+                                {{ autor.nombre }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {{ libro.edad_recomendada }}
+                            <a href="#" onclick="editarEdad('{{libro.titulo}}', '{% for autor in libro.autores.all %}{{ autor.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}', '{{libro.id}}')" class="text-muted">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge {% if libro.ejemplares_disponibles_count > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                {% if libro.ejemplares_disponibles_count > 0 %}Disponible{% else %}No disponible{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">
+                                {{ libro.ejemplares_disponibles_count }} / {{ libro.total_copias }}
+                            </span>
+                            <small class="text-muted">disponibles</small>
+                        </td>
+                        <td>
+                            {% if user.is_authenticated %}
+                               
+
+                                <button class="btn btn-sm btn-danger" onclick="eliminarLibro('{{ libro.id }}')">
+                                    <i class="bi bi-trash2-fill"></i>
+                                </button>
+
+                                <button class="btn btn-sm btn-secondary" 
+                                        onclick="mostrarMarbete(this)" 
+                                        data-dewey="{{ libro.dewey.codigo|default:'' }}"
+                                        data-autor="{% for autor in libro.autores.all %}{{ autor.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}"
+                                        data-titulo="{{ libro.titulo|escapejs }}"
+                                        data-anio="{{ libro.anio }}"
+                                        data-volumen="{{ libro.volumen|default:'' }}"
+                                        data-ejemplares="{{ libro.total_copias }}"
+                                        data-pais="{{ libro.pais|default:'' }}"
+                                        data-tipo="{{ libro.tipo_material|default:'libro' }}"
+                                        data-referencia="{{ libro.es_referencia|yesno:'true,false' }}">
+                                    <i class="bi bi-tag"></i> Marbete
+                                </button>
+                                <!--btn que abre el modal para registrar un prestamo de un ejemplar-->
+                                <button class="btn btn-sm btn-warning" onclick="mostrarModalPrestamo('{{ libro.id }}', '{{ libro.titulo }}', '{% for autor in libro.autores.all %}{{ autor.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}', '{{ libro.ejemplares_disponibles_count }}')">
+                                    <i class="bi bi-book"></i> Préstamo
+                                </button>
+                                <button class="btn btn-sm btn-info" onclick="mostrarInfoLibro('{{ libro.id }}')">
+                                    <i class="bi bi-info-circle"></i> Ver info
+                                </button>
+                            {% else %}
+                                <button class="btn btn-sm btn-info" onclick="mostrarInfoLibro('{{ libro.id }}')">
+                                    <i class="bi bi-info-circle"></i> Ver info
+                                </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No hay libros disponibles.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Navegación de páginas">
+                <ul class="pagination">
+                    {% if libros.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1" aria-label="Primera">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ libros.previous_page_number }}" aria-label="Anterior">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;&laquo;</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                    {% endif %}
+
+                    {% for num in libros.paginator.page_range %}
+                        {% if libros.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > libros.number|add:'-3' and num < libros.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if libros.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ libros.next_page_number }}" aria-label="Siguiente">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ libros.paginator.num_pages }}" aria-label="Última">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;&raquo;</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+
+        <div class="text-center mt-2">
+            <small class="text-muted">
+                Página {{ libros.number }} de {{ libros.paginator.num_pages }}
+            </small>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para resultados de Google Books -->
+<div class="modal fade" id="googleBooksModal" tabindex="-1" aria-labelledby="googleBooksModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="googleBooksModalLabel">Resultados de búsqueda</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="google-books-results">
+                <!-- Los resultados se insertarán aquí -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Include modal para agregar material -->
+{% include 'agregar_material_modal.html' %}
+{% include 'modals/reservar_libro_modal.html' %}
+{% include 'modals/registrar_prestamo_modal.html' %}
+{% include 'modals/marbete_modal.html' %}
+{% include 'modals/gestion_editoriales_modal.html' %}
+{% include 'modals/editar_editorial_modal.html' %}
+{% include 'modals/editar_edad_libro_modal.html' %}
+{% include 'modals/info_libro_modal.html' %}
+{% include 'modals/deweys_modal.html' %}
+{% include 'modals/ver_prestamos_modal.html' %}
+{% include 'modals/estadisticas_modal.html' %}
+
+
+
+<script src="{% static 'js/libros.js' %}"></script>
+
+<!-- Asegúrate de que Bootstrap JS está incluido antes del cierre del body -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Asegúrate de incluir SweetAlert2 en el head de tu documento -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Agregar antes del cierre del bloque content -->
+<script src="{% static 'js/marbete.js' %}"></script>
+
+<!-- Busqueda de libros en la tabla -->
+<script src="{% static 'js/busqueda/busqueda-libros.js' %}"></script>
+
+<!-- Agregar antes del cierre del bloque content -->
+<script src="{% static 'js/eliminar-libro.js' %}"></script>
+
+<!-- Agregar Chart.js y el nuevo archivo de estadísticas -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/estadisticas-prestamos.js' %}"></script>
+
+<!-- Agregar antes del cierre del bloque content -->
+<script src="{% static 'js/dewey-loader.js' %}"></script>
+
+<!-- Agregar el script para búsqueda y autocompletado de títulos -->
+<script src="{% static 'js/busqueda_titulos.js' %}"></script>
+<script src="{% static 'js/operacionesIA.js' %}"></script>
+
+{% endblock %}

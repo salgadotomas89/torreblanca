@@ -1,0 +1,213 @@
+<!-- Modal para agregar material -->
+<div class="modal fade" id="agregarMaterialModal" tabindex="-1" aria-labelledby="agregarMaterialModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="agregarMaterialModalLabel">Agregar Material</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="agregarMaterialForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tipo" class="form-label">Tipo de Material</label>
+                                <select class="form-control" id="tipo" name="tipo">
+                                    <option value="libro">Libro</option>
+                                    <option value="revista">Revista</option>
+                                    <option value="tesis">Tesis</option>
+                                    <option value="fanzine">Fanzine</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="titulo" class="form-label">Título</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="titulo" name="titulo" 
+                                           autocomplete="off"
+                                           required>
+                                </div>
+                                <div class="form-text text-muted">
+                                    <i class="bi bi-info-circle"></i> Escribe el título para buscar si ya existe y completar automáticamente todos los campos
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="autores-search" class="form-label">Autores</label>
+                                <div class="input-group">
+                                    <div class="form-control d-flex flex-wrap align-items-center" 
+                                         style="height: auto; min-height: calc(1.5em + 0.75rem + 2px); padding: 0.25rem;">
+                                        <div id="autores-tags-container" class="d-flex flex-wrap me-2 mb-1 mt-1">
+                                            <!-- Los tags de autores se agregarán aquí dinámicamente -->
+                                        </div>
+                                        <input type="text" 
+                                               class="border-0 flex-grow-1 mb-1 mt-1" 
+                                               id="autores-search" 
+                                               placeholder="Agregar autor..." 
+                                               autocomplete="off"
+                                               style="outline: none; min-width: 100px;"
+                                               oninput="buscarAutores(this.value)">
+                                    </div>
+                                    <input type="hidden" id="autores" name="autores">
+                                    <button type="button" class="btn btn-info" id="btn-obtener-ia" onclick="obtenerDatosIA()">
+                                        <i class="bi bi-robot"></i> Obtener datos con IA
+                                    </button>
+                                </div>
+                                <div id="autores-suggestions" 
+                                     class="list-group position-absolute w-100" 
+                                     style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none;">
+                                </div>
+                                <div class="invalid-feedback">Por favor agregue al menos un autor válido</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="edad_recomendada" class="form-label">
+                                    Edad Recomendada
+                                    <button type="button" class="btn btn-link btn-sm text-muted p-0 ms-2" 
+                                            id="reiniciar-edad" 
+                                            title="Reiniciar memoria de edad"
+                                            style="vertical-align: baseline; font-size: 0.8em;">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                </label>
+                                <select class="form-control" id="edad_recomendada" name="edad_recomendada" required>
+                                    <option value="">Seleccione una edad</option>
+                                    <option value="5-6">5 a 6 años</option>
+                                    <option value="7-8">7 a 8 años</option>
+                                    <option value="9-10">9 a 10 años</option>
+                                    <option value="11-12">11 a 12 años</option>
+                                    <option value="13+">13 años en adelante</option>
+                                </select>
+                                
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="codigo_dewey" class="form-label">
+                                    Código Dewey
+                                    <button type="button" class="btn btn-link btn-sm text-muted p-0 ms-2" 
+                                            id="reiniciar-dewey" 
+                                            title="Reiniciar memoria de código Dewey"
+                                            style="vertical-align: baseline; font-size: 0.8em;">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                </label>
+                                <div class="input-group">
+                                    <select class="form-control" id="codigo_dewey" name="codigo_dewey" required>
+                                        {% for codigo in codigos %}
+                                            <option value="{{ codigo.id }}">{{ codigo.codigo }} - {{ codigo.descripcion }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="button" class="btn btn-sm btn-secondary" onclick="mostrarModalDewey()">
+                                        Agregar nuevo dewey
+                                    </button>
+                                </div>
+                                <div id="dewey-recomendado" class="text-info mt-1" style="display: none;">
+                                    <small><i class="bi bi-lightbulb"></i> Dewey recomendado: <span id="dewey-recomendado-texto"></span></small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="anio" class="form-label">Año</label>
+                                <input type="text" class="form-control" id="anio" name="anio" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="editorial-search" class="form-label">Editorial</label>
+                                <div class="input-group">
+                                    <div class="form-control d-flex flex-wrap align-items-center" 
+                                         style="height: auto; min-height: calc(1.5em + 0.75rem + 2px); padding: 0.25rem;">
+                                        <div id="editorial-tag" class="d-none me-2 mb-1 mt-1">
+                                            <span class="badge bg-primary d-flex align-items-center">
+                                                <span id="editorial-tag-text"></span>
+                                                <button type="button" class="btn-close btn-close-white ms-2" 
+                                                        style="font-size: 0.5rem;" 
+                                                        onclick="removeEditorial(event)"></button>
+                                            </span>
+                                        </div>
+                                        <input type="text" 
+                                               class="border-0 flex-grow-1 mb-1 mt-1" 
+                                               id="editorial-search" 
+                                               placeholder="Buscar editorial..." 
+                                               autocomplete="off"
+                                               style="outline: none; min-width: 100px;"
+                                               oninput="buscarEditoriales(this.value)">
+                                    </div>
+                                    <input type="hidden" id="editorial" name="editorial">
+                                    
+                                </div>
+                                <div id="editorial-suggestions" 
+                                     class="list-group position-absolute w-100" 
+                                     style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none;">
+                                </div>
+                                <div class="invalid-feedback">Por favor seleccione una editorial válida</div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="resumen" class="form-label">Resumen</label>
+                                <textarea class="form-control" id="resumen" name="resumen" rows="3" required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="foto" class="form-label">Foto</label>
+                                <input type="file" class="form-control" id="foto" name="foto">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="volumen" class="form-label">Volumen (opcional)</label>
+                                <input type="number" class="form-control" id="volumen" name="volumen" min="1">
+                                <small class="form-text text-muted">Dejar en blanco si no es parte de una serie de volúmenes</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="numero_ejemplares" class="form-label">Número de ejemplares</label>
+                                <input type="number" class="form-control" id="numero_ejemplares" name="numero_ejemplares" min="1" value="1" required>
+                                <div class="form-text">Cantidad de ejemplares a registrar</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="isbn" class="form-label">ISBN</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="isbn" name="isbn">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="verificarISBN()">
+                                        Verificar
+                                    </button>
+                                </div>
+                                <div id="isbn-feedback" class="form-text"></div>
+                            </div>
+                        </div>
+
+                        <!-- Sección para mostrar ejemplares existentes -->
+                        <div id="ejemplares-existentes" class="col-12 mb-3" style="display: none;">
+                            <div class="alert alert-info">
+                                <h6>Ejemplares existentes del libro:</h6>
+                                <div id="lista-ejemplares"></div>
+                                <hr>
+                                <p class="mb-0">Se agregarán nuevos ejemplares a partir del último número.</p>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarMaterial()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>

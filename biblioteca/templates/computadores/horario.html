@@ -1,0 +1,373 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Agregar referencia a Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Calendario de Reserva de Biblioteca y/o Computadores</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <button class="btn btn-outline-primary" id="prevMonth">&laquo; Mes anterior</button>
+                        <h4 id="currentMonth" class="mb-0"></h4>
+                        <button class="btn btn-outline-primary" id="nextMonth">Mes siguiente &raquo;</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Lun</th>
+                                    <th>Mar</th>
+                                    <th>Mié</th>
+                                    <th>Jue</th>
+                                    <th>Vie</th>
+                                </tr>
+                            </thead>
+                            <tbody id="calendarBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Realizar Reserva</h4>
+                </div>
+                <div class="card-body">
+                    <form id="reservaForm" method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre_profesor" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="apellido" class="form-label">Apellido</label>
+                            <input type="text" class="form-control" id="apellido" name="apellido_profesor" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fecha" class="form-label">Fecha</label>
+                            <input type="date" class="form-control" id="fecha" name="fecha" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Bloques Horarios (selecciona uno o varios)</label>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="bloques[]" value="1" id="bloque1">
+                                    <label class="form-check-label" for="bloque1">
+                                        8:30 - 10:00
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="bloques[]" value="2" id="bloque2">
+                                    <label class="form-check-label" for="bloque2">
+                                        10:20 - 11:45
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="bloques[]" value="3" id="bloque3">
+                                    <label class="form-check-label" for="bloque3">
+                                        12:00 - 13:30
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="bloques[]" value="4" id="bloque4">
+                                    <label class="form-check-label" for="bloque4">
+                                        14:15 - 15:45
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="bloqueError" class="invalid-feedback" style="display: none;">
+                                Por favor, selecciona al menos un bloque horario.
+                            </div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="necesitaComputadores" name="necesita_computadores">
+                            <label class="form-check-label" for="necesitaComputadores">¿Necesita computadores para esta reserva?</label>
+                            <div id="computadorHelp" class="form-text text-warning">Nota: La reserva con computadores debe hacerse con al menos un día de antelación.</div>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Reservar</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4 shadow">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">Leyenda</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="bg-success text-white p-2 me-2" style="width: 30px; text-align: center;">L</div>
+                        <span>Bloque libre</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="bg-danger text-white p-2 me-2" style="width: 30px; text-align: center;">R</div>
+                        <span>Bloque reservado</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-danger text-white p-2 me-2 d-flex justify-content-between align-items-center" style="width: 60px;">
+                            <span>R</span>
+                            <i class="bi bi-pc-display"></i>
+                        </div>
+                        <span>Requiere computadores</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentDate = new Date();
+    updateCalendar(currentDate);
+
+    document.getElementById('prevMonth').addEventListener('click', function() {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        updateCalendar(currentDate);
+    });
+
+    document.getElementById('nextMonth').addEventListener('click', function() {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        updateCalendar(currentDate);
+    });
+
+    // Establecer fecha mínima como hoy en el input de fecha
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('fecha').setAttribute('min', today);
+
+    // Función para validar la selección de computador según la fecha
+    function validarComputadorFecha() {
+        const fechaSeleccionada = document.getElementById('fecha').value;
+        const necesitaComputador = document.getElementById('necesitaComputadores');
+        const computadorHelp = document.getElementById('computadorHelp');
+        
+        if (fechaSeleccionada === today && necesitaComputador.checked) {
+            computadorHelp.classList.remove('text-warning');
+            computadorHelp.classList.add('text-danger');
+            computadorHelp.textContent = "Error: No es posible reservar computadores para el mismo día. Debe hacerse con al menos un día de antelación.";
+            return false;
+        } else {
+            computadorHelp.classList.remove('text-danger');
+            computadorHelp.classList.add('text-warning');
+            computadorHelp.textContent = "Nota: La reserva con computadores debe hacerse con al menos un día de antelación.";
+            return true;
+        }
+    }
+    
+    // Eventos para validar cuando cambia la fecha o el checkbox
+    document.getElementById('fecha').addEventListener('change', validarComputadorFecha);
+    document.getElementById('necesitaComputadores').addEventListener('change', validarComputadorFecha);
+
+    // Manejar el envío del formulario
+    document.getElementById('reservaForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validar la restricción de computadores
+        if (!validarComputadorFecha()) {
+            return; // Detener el envío si la validación falla
+        }
+        
+        // Verificar que al menos un bloque esté seleccionado
+        const bloqueCheckboxes = document.querySelectorAll('input[name="bloques[]"]');
+        let alMenosUnBloqueSeleccionado = false;
+        
+        bloqueCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                alMenosUnBloqueSeleccionado = true;
+            }
+        });
+        
+        if (!alMenosUnBloqueSeleccionado) {
+            document.getElementById('bloqueError').style.display = 'block';
+            return;
+        } else {
+            document.getElementById('bloqueError').style.display = 'none';
+        }
+        
+        const formData = new FormData(this);
+        
+        // Obtener todos los bloques seleccionados
+        const bloquesSeleccionados = [];
+        bloqueCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                bloquesSeleccionados.push(checkbox.value);
+            }
+        });
+        
+        // Guardar los valores antes de enviar
+        const nombreValue = document.getElementById('nombre').value;
+        const apellidoValue = document.getElementById('apellido').value;
+        const fechaValue = document.getElementById('fecha').value;
+        const necesitaComputadoresValue = document.getElementById('necesitaComputadores').checked;
+
+        // Crear una promesa para cada bloque seleccionado
+        const reservaPromises = bloquesSeleccionados.map(bloque => {
+            const bloqueFormData = new FormData();
+            bloqueFormData.append('nombre_profesor', nombreValue);
+            bloqueFormData.append('apellido_profesor', apellidoValue);
+            bloqueFormData.append('fecha', fechaValue);
+            bloqueFormData.append('bloque', bloque);
+            bloqueFormData.append('necesita_computadores', necesitaComputadoresValue);
+            
+            return fetch('{% url "reservar" %}', {
+                method: 'POST',
+                body: bloqueFormData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            }).then(response => response.json());
+        });
+        
+        // Manejar todas las promesas
+        Promise.all(reservaPromises)
+            .then(resultados => {
+                const errores = resultados.filter(data => !data.success).map(data => data.error);
+                
+                if (errores.length === 0) {
+                    // Todas las reservas fueron exitosas
+                    alert(`Reserva${bloquesSeleccionados.length > 1 ? 's' : ''} realizada${bloquesSeleccionados.length > 1 ? 's' : ''} con éxito`);
+                    updateCalendar(currentDate);
+                    
+                    // Resetear el formulario excepto nombre y apellido
+                    this.reset();
+                    document.getElementById('nombre').value = nombreValue;
+                    document.getElementById('apellido').value = apellidoValue;
+                    document.getElementById('fecha').focus();
+                } else {
+                    // Hubo errores en algunas reservas
+                    const exitos = resultados.filter(data => data.success).length;
+                    let mensaje = '';
+                    
+                    if (exitos > 0) {
+                        mensaje += `Se realizaron ${exitos} reserva${exitos > 1 ? 's' : ''} correctamente.\n`;
+                    }
+                    
+                    mensaje += `Errores encontrados:\n${errores.join('\n')}`;
+                    alert(mensaje);
+                    updateCalendar(currentDate);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al procesar la reserva');
+            });
+    });
+
+    function updateCalendar(date) {
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ];
+
+        document.getElementById('currentMonth').textContent = 
+            `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+
+        const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        
+        // Corregir la interpolación de la URL
+        fetch(`/biblioteca/obtener_reservas/?year=${date.getFullYear()}&month=${date.getMonth() + 1}`)
+            .then(response => response.json())
+            .then(reservas => {
+                renderCalendar(firstDay, lastDay, reservas);
+            });
+    }
+
+    function renderCalendar(firstDay, lastDay, reservas) {
+        const calendarBody = document.getElementById('calendarBody');
+        calendarBody.innerHTML = '';
+
+        let currentRow = document.createElement('tr');
+        
+        // Ajustar al primer día de la semana (lunes = 1)
+        let firstWeekDay = firstDay.getDay() || 7;
+        
+        // Agregar celdas vacías hasta el primer día del mes
+        for (let i = 1; i < firstWeekDay; i++) {
+            const emptyCell = document.createElement('td');
+            emptyCell.className = 'bg-light';
+            currentRow.appendChild(emptyCell);
+        }
+
+        for (let day = 1; day <= lastDay.getDate(); day++) {
+            const currentDate = new Date(firstDay.getFullYear(), firstDay.getMonth(), day);
+            const weekDay = currentDate.getDay() || 7;
+
+            if (weekDay === 1 && day > 1) {
+                calendarBody.appendChild(currentRow);
+                currentRow = document.createElement('tr');
+            }
+
+            if (weekDay <= 5) { // Solo días de lunes a viernes
+                const cell = document.createElement('td');
+                cell.className = 'position-relative';
+                cell.style.height = '100px';
+
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'fw-bold mb-2';
+                dateDiv.textContent = day;
+                cell.appendChild(dateDiv);
+
+                // Agregar bloques horarios
+                const bloques = document.createElement('div');
+                bloques.className = 'd-flex flex-column gap-1';
+                
+                for (let bloque = 1; bloque <= 4; bloque++) {
+                    const bloqueDiv = document.createElement('div');
+                    const fechaStr = currentDate.toISOString().split('T')[0];
+                    
+                    // Verificar si el bloque está reservado
+                    const reserva = reservas.find(r => 
+                        r.fecha === fechaStr && 
+                        r.bloque === bloque.toString()
+                    );
+
+                    if (reserva) {
+                        bloqueDiv.className = 'bg-danger text-white p-1 small d-flex justify-content-between align-items-center';
+                        
+                        // Crear el contenido con R + nombre del profesor
+                        const textSpan = document.createElement('span');
+                        textSpan.textContent = `R - ${reserva.nombre_profesor}`;
+                        textSpan.style.fontSize = '0.8rem';
+                        textSpan.style.whiteSpace = 'nowrap';
+                        textSpan.style.overflow = 'hidden';
+                        textSpan.style.textOverflow = 'ellipsis';
+                        textSpan.style.maxWidth = '85%';
+                        bloqueDiv.appendChild(textSpan);
+                        
+                        // Crear icono de computadora si es necesario
+                        if (reserva.necesita_computadores) {
+                            const iconSpan = document.createElement('span');
+                            iconSpan.innerHTML = '<i class="bi bi-pc-display"></i>';
+                            iconSpan.title = 'Necesita computadores';
+                            bloqueDiv.appendChild(iconSpan);
+                        }
+                        
+                        bloqueDiv.title = `Reservado por: ${reserva.nombre_profesor} ${reserva.apellido_profesor}${reserva.necesita_computadores ? ' (Requiere computadores)' : ''}`;
+                    } else {
+                        bloqueDiv.className = 'bg-success text-white p-1 small';
+                        bloqueDiv.textContent = 'L';
+                    }
+
+                    bloques.appendChild(bloqueDiv);
+                }
+                
+                cell.appendChild(bloques);
+                currentRow.appendChild(cell);
+            }
+        }
+
+        if (currentRow.hasChildNodes()) {
+            calendarBody.appendChild(currentRow);
+        }
+    }
+});
+</script>
+{% endblock %}

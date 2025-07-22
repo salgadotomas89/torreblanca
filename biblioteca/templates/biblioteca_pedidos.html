@@ -1,0 +1,47 @@
+{% extends "index.html" %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+
+<div class="container mt-5">
+    <h2>Préstamos de la Biblioteca</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Tipo</th>
+                <th>Alumno</th>
+                <th>Fecha Préstamo</th>
+                <th>Fecha Devolución</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pedido in pedidos %}
+            <tr>
+                <td>{{ pedido.titulo }}</td>
+                <td>{{ pedido.tipo_material }}</td>
+                <td>{{ pedido.alumno }}</td>
+                <td>{{ pedido.fecha_prestamo|date:"d/m/Y" }}</td>
+                <td>{{ pedido.fecha_devolucion|date:"d/m/Y"|default:"Pendiente" }}</td>
+                <td>{{ pedido.estado }}</td>
+                <td>
+                    <button class="btn btn-sm btn-danger eliminar-reserva" data-id="{{ pedido.id }}">Eliminar</button>
+                    <button class="btn btn-sm btn-warning dar-baja-reserva" data-id="{{ pedido.id }}">Dar de baja</button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No hay préstamos registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+<script src="{% static 'js/biblioteca_pedidos.js' %}"></script>
+
+
+{% endblock %}

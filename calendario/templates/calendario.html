@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <!-- FullCalendar CSS -->
+</head>
+<body>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col">
+            <div id="calendar">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Resto del código HTML -->
+
+<!-- Modal para Ingresar Evaluaciones -->
+<div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventModalLabel">Agregar Evaluación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="evalTitle" class="form-label">Título de la Evaluación</label>
+                        <input type="text" class="form-control" id="evalTitle" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="evalDescription" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="evalDescription" rows="3"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="evalDate" class="form-label">Fecha de la Evaluación</label>
+                        <input type="date" class="form-control" id="evalDate" required>
+                    </div>
+                    
+
+                   
+                    <!-- Agrega más campos aquí si es necesario -->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="saveEval" data-curso-id="{{ curso_id }}">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para mostrar detalles de la evaluación -->
+<div class="modal fade" id="evalDetailModal" tabindex="-1" aria-labelledby="evalDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="evalDetailModalLabel">Detalles de la Evaluación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Título:</strong> <span id="evalDetailTitle"></span></p>
+                <p><strong>Fecha:</strong> <span id="evalDetailDate"></span></p>
+                <p><strong>Id:</strong> <span id="evalDetailId"></span></p>
+                <p><strong>Descripción:</strong> <span id="evalDetailDescription"></span></p>
+
+                
+            </div>
+            <div class="modal-footer">
+                {% if user.is_authenticated %}
+
+                    <button type="button" class="btn btn-danger" id="deleteEval">Eliminar</button>
+
+                {% endif %}
+
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Bootstrap JS -->
+<!-- jQuery -->
+<!-- FullCalendar JS -->
+
+
+<script>
+
+    // Función para obtener el valor de una cookie por su nombre
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Documento listo
+$(document).ready(function() {
+    var selectedMonth; // Variable para almacenar el mes seleccionado
+
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        
+        locale: 'es',
+
+        initialView: 'dayGridMonth',
+        selectable: true,
+        
+        select: function(info) {
+            $('#evalDate').val(info.start.toLocaleDateString('en-CA')); // Ajusta el formato de fecha si es necesario
+            
+            $('#evalDate').prop('disabled', true); // Deshabilitar la edición del campo de fecha
+
+            $('#eventModal').modal('show');
+        },
+        eventClick: function(info) {
+            selectedEvent = info.event;
+
+            // Mostrar detalles de la evaluación al hacer clic en un evento
+            $('#evalDetailTitle').text(info.event.title);
+            $('#evalDetailDate').text(info.event.start.toLocaleDateString());
+            $('#evalDetailId').text(info.event.id);
+            $('#evalDetailDescription').text(info.event.extendedProps.description); // Mostrar descripción
+            // Mostrar el modal de detalles
+            $('#evalDetailModal').modal('show');
+        },
+
+        datesSet: function(info) {
+            selectedMonth = info.view.currentStart.getMonth() + 1; // Corrección aquí
+        },
+
+        events: [
+            // Iterar sobre los eventos y cargarlos en el calendario
+            {% for evento in eventos %}
+            {
+                id: "{{ evento.id }}",
+                title: "{{ evento.title }}",
+                description: "{{evento.description}}",
+                start: "{{ evento.start }}",
+                color: "{{ evento.color }}"
+            },
+            {% endfor %}
+        ]
+    });
+
+
+    // Manejar clic en botón Eliminar dentro del modal de detalles
+    $('#deleteEval').off('click').on('click', function() {
+        if (confirm('¿Seguro que deseas eliminar esta evaluación?')) {
+
+            if (selectedEvent) {
+                var eventId = selectedEvent.id; // Obtener el ID del evento
+                var csrfToken = getCookie('csrftoken');
+
+                // Realizar solicitud AJAX para eliminar la evaluación
+                $.ajax({
+                    type: 'POST',
+                    url: `/calendario/eliminar_evaluacion/`,
+                    data: {
+                        'event_id': eventId
+                    },
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                    },
+                    success: function(data) {
+                        if (data.success) {
+                            // Remover el evento del calendario y cerrar el modal
+                            calendar.getEventById(eventId).remove();
+                            $('#evalDetailModal').modal('hide');
+                        } else {
+                            alert('Error al eliminar la evaluación: ' + data.error);
+                        }
+                    },
+                    error: function() {
+                        alert('Error de conexión al eliminar la evaluación.');
+                    }
+                });
+            }
+        }
+    });
+
+    // Manejar clic en botón Guardar en el modal de agregar evaluación
+    $('#saveEval').click(function() {
+        var evalTitle = $('#evalTitle').val();
+        var evalDate = $('#evalDate').val();
+        var evalDescription = $('#evalDescription').val();
+
+
+        if (evalTitle && evalDate && cursoId) {  // Utilizar cursoId aquí
+            var csrfToken = getCookie('csrftoken');
+
+            // Realizar solicitud AJAX para guardar la evaluación
+            $.ajax({
+                type: 'POST',
+                url: `/calendario/guardar_evaluacion/`,
+                data: {
+                    'eval_title': evalTitle,
+                    'eval_date': evalDate,
+                    'eval_descrip': evalDescription,
+                    'curso_id': cursoId
+                },
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                beforeSend: function(xhr, settings) {
+                    xhr.setRequestHeader('X-CSRFToken', csrfToken);
+                },
+                success: function(data) {
+                    if (data.success) {
+                        // Agregar el evento al calendario y cerrar el modal
+                        var formattedDate = evalDate + 'T00:00:00';
+                        var eventData = {
+                            title: evalTitle,
+                            start: formattedDate
+                        };
+                        calendar.addEvent(eventData);
+                        $('#eventModal').modal('hide');
+                    } else {
+                        alert('Error al guardar la evaluación: ' + data.error);
+                    }
+                },
+                error: function() {
+                    alert('Error de conexión al guardar la evaluación.');
+                }
+            });
+        }
+    });
+
+
+    // Manejar clic en botón "descargar pdf"
+    $('#descargar-pdf-btn').click(function() {
+        if (cursoId && selectedMonth) {
+            descargarPDF(cursoId, selectedMonth);
+        } else {
+            alert('Seleccione un curso antes de descargar el PDF.');
+        }
+    });
+
+
+    function descargarPDF(cursoId, selectedMonth) {
+        
+        // Realizar la solicitud AJAX para descargar el PDF
+        $.ajax({
+            type: 'GET',
+            url: `calendario/generar_pdf/${cursoId}/${selectedMonth}`,
+            success: function(response) {
+                var blob = new Blob([response], { type: 'application/pdf' });
+                var link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'reporte.pdf';
+                link.click();
+            },
+            error: function(error) {
+                console.log(error);
+                alert('Error al descargar el PDF.');
+            }
+        });
+    }
+
+    // Renderizar el calendario
+    calendar.render();
+});
+
+    
+</script>
+
+</body>
+</html>

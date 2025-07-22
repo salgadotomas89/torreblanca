@@ -1,0 +1,36 @@
+<!-- Agregar este modal antes del cierre del body -->
+<div class="modal fade" id="editarEdadModal" tabindex="-1" aria-labelledby="editarEdadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarEdadModalLabel">Editar Edad Recomendada</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editar-edad-form">
+                    {% csrf_token %}
+                    <input type="hidden" id="libro-id-edad">
+                    <div class="mb-3">
+                        <label for="edad-recomendada" class="form-label">Edad Recomendada</label>
+                        <select class="form-control" id="edad-recomendada" required>
+                            <option value="">Seleccione una edad</option>
+                            <option value="5-6">5 a 6 años</option>
+                            <option value="7-8">7 a 8 años</option>
+                            <option value="9-10">9 a 10 años</option>
+                            <option value="11-12">11 a 12 años</option>
+                            <option value="13+">13 años en adelante</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <p><strong>Libro:</strong> <span id="libro-nombre-edad"></span></p>
+                        <p><strong>Autor:</strong> <span id="libro-autor-edad"></span></p>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarEdad()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,153 @@
+
+<!-- Modal para estadísticas -->
+<div class="modal fade" id="estadisticasModal" tabindex="-1" aria-labelledby="estadisticasModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="estadisticasModalLabel">
+                    <i class="bi bi-graph-up me-2"></i>Estadísticas de Préstamos de la Biblioteca
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Loading inicial -->
+                <div id="estadisticas-loading" class="text-center p-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-3">Cargando estadísticas de préstamos...</p>
+                </div>
+                
+                <!-- Contenido de estadísticas (se llenará dinámicamente) -->
+                <div id="estadisticas-content" style="display: none;">
+                    <!-- Filtros -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3">
+                                        <i class="bi bi-funnel me-2"></i>Filtros de consulta
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Año</label>
+                                            <select class="form-select" id="filtro-año">
+                                                <option value="">Todos los años</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Mes</label>
+                                            <select class="form-select" id="filtro-mes">
+                                                <option value="">Todos los meses</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 d-flex align-items-end">
+                                            <button class="btn btn-primary w-100" onclick="actualizarEstadisticas()">
+                                                <i class="bi bi-arrow-clockwise me-2"></i>Actualizar estadísticas
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información del rango de datos -->
+                    <div id="info-rango" class="alert alert-info" style="display: none;">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small id="rango-texto"></small>
+                    </div>
+
+                    <!-- Gráficos -->
+                    <div class="row">
+                        <!-- Libros más prestados -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-white">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-book me-2 text-primary"></i>Libros más prestados
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="librosMasPrestadosChart" style="max-height: 300px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Préstamos por mes -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-white">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-calendar3 me-2 text-success"></i>Préstamos por mes
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="prestamosPorMesChart" style="max-height: 300px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tasa de devolución -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-white">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-arrow-return-left me-2 text-warning"></i>Tasa de devolución a tiempo
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="tasaDevolucionChart" style="max-height: 300px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Alumnos más frecuentes -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-white">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-people me-2 text-info"></i>Alumnos más frecuentes
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="alumnosFrecuentesChart" style="max-height: 300px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumen estadístico -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3">
+                                        <i class="bi bi-pie-chart me-2"></i>Resumen estadístico
+                                    </h6>
+                                    <div class="row text-center" id="resumen-stats">
+                                        <!-- Se llenará dinámicamente -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensaje de error -->
+                <div id="estadisticas-error" class="alert alert-danger" style="display: none;">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span id="mensaje-error"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Cerrar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="actualizarEstadisticas()" id="btn-actualizar">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Actualizar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,95 @@
+<!-- Modal para información del libro -->
+<div class="modal fade" id="infoLibroModal" tabindex="-1" aria-labelledby="infoLibroModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0 bg-light">
+                <h5 class="modal-title" id="infoLibroModalLabel">
+                    <i class="bi bi-book text-primary"></i> 
+                    <span id="libro-titulo" class="fw-bold"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    <!-- Columna de la imagen -->
+                    <div class="col-md-4">
+                        <div class="book-image-container position-relative">
+                            <div class="book-cover-wrapper">
+                                <img id="libro-foto" 
+                                     src="" 
+                                     alt="Portada del libro" 
+                                     class="book-cover">
+                                <div class="book-shadow"></div>
+                            </div>
+                            <div class="mt-3 text-center">
+                                <form id="foto-form" enctype="multipart/form-data" class="d-none">
+                                    {% csrf_token %}
+                                    <input type="file" id="nueva-foto" name="foto" accept="image/*" class="form-control">
+                                </form>
+                                {% if user.is_authenticated %}
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="cambiarFoto()">
+                                        <i class="bi bi-camera-fill me-1"></i> Actualizar portada
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Columna de la información -->
+                    <div class="col-md-8">
+                        <div class="autor-section mb-4">
+                            <span class="text-muted small">Autor</span>
+                            <h5 id="libro-autor" class="fw-bold mb-0"></h5>
+                        </div>
+                        
+                        <div class="info-grid">
+                            <div class="info-card">
+                                <label class="text-muted small">Editorial</label>
+                                <p id="libro-editorial" class="fw-medium"></p>
+                            </div>
+                            
+                            <div class="info-card">
+                                <label class="text-muted small">ISBN</label>
+                                <p id="libro-isbn" class="fw-medium"></p>
+                            </div>
+                            
+                            <div class="info-card">
+                                <label class="text-muted small">Código Dewey</label>
+                                <p id="libro-dewey" class="fw-medium"></p>
+                            </div>
+                            
+                            <div class="info-card">
+                                <label class="text-muted small">Año</label>
+                                <p id="libro-anio" class="fw-medium"></p>
+                            </div>
+                            
+                            <div class="info-card">
+                                <label class="text-muted small">Edad recomendada</label>
+                                <p id="libro-edad" class="fw-medium"></p>
+                            </div>
+                            
+                            <div class="info-card">
+                                <label class="text-muted small">Volumen</label>
+                                <p id="libro-volumen" class="fw-medium"></p>
+                            </div>
+                        </div>
+
+                        <!-- Sección de resumen -->
+                        <div class="mt-4 resumen-section">
+                            <label class="text-muted small d-block mb-2">Resumen</label>
+                            <div class="resumen-content p-3 bg-light rounded">
+                                <p id="libro-resumen" class="text-justify lh-base mb-0"></p>
+                            </div>
+                        </div>
+
+                        <!-- Sección de ejemplares -->
+                        <div class="mt-4 ejemplares-section">
+                            <label class="text-muted small d-block mb-2">Ejemplares</label>
+                            <div id="libro-ejemplares" class="ejemplares-grid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,205 @@
+
+{% extends "inicio/layout_updated.html" %}
+{% load static %}
+{% block body %}
+{% include "common_styles.html" %}
+
+<div class="container py-5">
+    <div class="p-4 p-md-5 mb-4 rounded text-bg-light">
+        <div class="col-md-6 px-0">
+            <h1 class="display-4 fst-italic">Directiva</h1>
+            <p class="lead my-3">Liderazgo y gestión educativa de excelencia para nuestra comunidad.</p>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+
+            <!-- Content Section -->
+            <div class="container my-5">
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="text-center mb-5">
+                            <i class="bi bi-people-fill text-primary" style="font-size: 3rem;"></i>
+                            <h2 class="mt-3 text-primary">Equipo Directivo {{ colegio.nombre }}</h2>
+                            <p class="lead text-muted">Comprometidos con la excelencia educativa y el desarrollo integral de nuestros estudiantes</p>
+                        </div>
+                        
+                        <!-- Director/a -->
+                        <div class="row mb-5">
+                            <div class="col-12">
+                                <div class="card shadow-lg border-0">
+                                    <div class="card-body p-5">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-3 text-center mb-4 mb-md-0">
+                                                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                                                    <i class="bi bi-person-circle text-white" style="font-size: 4rem;"></i>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-9">
+                                                <h3 class="text-primary">Director/a General</h3>
+                                                <h5 class="text-muted mb-3">[Nombre del Director/a]</h5>
+                                                <p class="text-muted">
+                                                    Líder educativo con más de [X] años de experiencia en gestión escolar. 
+                                                    Especialista en [área de especialización], comprometido/a con la innovación 
+                                                    pedagógica y el desarrollo de una educación integral de calidad.
+                                                </p>
+                                                <div class="row">
+                                                    <div class="col-sm-6">
+                                                        <p class="mb-1"><i class="bi bi-mortarboard text-primary me-2"></i><strong>Formación:</strong></p>
+                                                        <p class="text-muted small">[Título profesional y estudios]</p>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <p class="mb-1"><i class="bi bi-envelope text-primary me-2"></i><strong>Contacto:</strong></p>
+                                                        <p class="text-muted small">direccion@{{ colegio.nombre|lower }}.cl</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Subdirectores y coordinadores -->
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-body p-4 text-center">
+                                        <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                            <i class="bi bi-book text-white" style="font-size: 2rem;"></i>
+                                        </div>
+                                        <h5 class="text-success">Subdirector/a Académico</h5>
+                                        <h6 class="text-muted">[Nombre]</h6>
+                                        <p class="text-muted small">
+                                            Responsable de la supervisión curricular, coordinación pedagógica y 
+                                            evaluación de los procesos de enseñanza-aprendizaje.
+                                        </p>
+                                        <p class="small"><i class="bi bi-envelope me-1"></i>academico@{{ colegio.nombre|lower }}.cl</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-body p-4 text-center">
+                                        <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                            <i class="bi bi-people text-white" style="font-size: 2rem;"></i>
+                                        </div>
+                                        <h5 class="text-warning">Coordinador/a de Convivencia</h5>
+                                        <h6 class="text-muted">[Nombre]</h6>
+                                        <p class="text-muted small">
+                                            Encargado/a de promover la sana convivencia escolar, resolver conflictos 
+                                            y coordinar actividades formativas.
+                                        </p>
+                                        <p class="small"><i class="bi bi-envelope me-1"></i>convivencia@{{ colegio.nombre|lower }}.cl</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-body p-4 text-center">
+                                        <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                            <i class="bi bi-graph-up text-white" style="font-size: 2rem;"></i>
+                                        </div>
+                                        <h5 class="text-info">Coordinador/a de Evaluación</h5>
+                                        <h6 class="text-muted">[Nombre]</h6>
+                                        <p class="text-muted small">
+                                            Responsable del sistema de evaluación institucional, análisis de resultados 
+                                            y planes de mejoramiento continuo.
+                                        </p>
+                                        <p class="small"><i class="bi bi-envelope me-1"></i>evaluacion@{{ colegio.nombre|lower }}.cl</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100 shadow-sm border-0">
+                                    <div class="card-body p-4 text-center">
+                                        <div class="bg-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                            <i class="bi bi-gear text-white" style="font-size: 2rem;"></i>
+                                        </div>
+                                        <h5 class="text-danger">Administrador/a</h5>
+                                        <h6 class="text-muted">[Nombre]</h6>
+                                        <p class="text-muted small">
+                                            Encargado/a de la gestión administrativa, recursos humanos, infraestructura 
+                                            y servicios generales del establecimiento.
+                                        </p>
+                                        <p class="small"><i class="bi bi-envelope me-1"></i>administracion@{{ colegio.nombre|lower }}.cl</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Organigrama -->
+                        <div class="card bg-light border-0 mt-5">
+                            <div class="card-body p-4">
+                                <h4 class="text-center mb-4 text-primary">
+                                    <i class="bi bi-diagram-3 me-2"></i>Estructura Organizacional
+                                </h4>
+                                <div class="row text-center">
+                                    <div class="col-12 mb-3">
+                                        <div class="badge bg-primary fs-6 p-2">Dirección General</div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="badge bg-success fs-6 p-2">Subdirección Académica</div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="badge bg-warning fs-6 p-2">Convivencia Escolar</div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="badge bg-info fs-6 p-2">Evaluación</div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="badge bg-danger fs-6 p-2">Administración</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Consejo Escolar -->
+                        <div class="card shadow-sm border-0 mt-5">
+                            <div class="card-body p-4">
+                                <h4 class="text-center mb-4 text-secondary">
+                                    <i class="bi bi-people-fill me-2"></i>Consejo Escolar
+                                </h4>
+                                <p class="text-muted text-center">
+                                    Órgano colegiado de participación de la comunidad educativa, integrado por representantes de:
+                                </p>
+                                <div class="row text-center">
+                                    <div class="col-md-3 mb-3">
+                                        <i class="bi bi-person-badge text-primary" style="font-size: 2rem;"></i>
+                                        <p class="mt-2 mb-0"><strong>Dirección</strong></p>
+                                        <small class="text-muted">Presidente del Consejo</small>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <i class="bi bi-person-workspace text-success" style="font-size: 2rem;"></i>
+                                        <p class="mt-2 mb-0"><strong>Docentes</strong></p>
+                                        <small class="text-muted">Representante profesores</small>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <i class="bi bi-person-hearts text-warning" style="font-size: 2rem;"></i>
+                                        <p class="mt-2 mb-0"><strong>Padres</strong></p>
+                                        <small class="text-muted">Centro de Padres</small>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <i class="bi bi-people text-info" style="font-size: 2rem;"></i>
+                                        <p class="mt-2 mb-0"><strong>Estudiantes</strong></p>
+                                        <small class="text-muted">Centro de Alumnos</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-5">
+                            <a href="{% url 'inicio' %}" class="btn btn-primary btn-lg">
+                                <i class="bi bi-house me-2"></i>Volver al Inicio
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

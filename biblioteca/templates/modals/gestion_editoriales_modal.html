@@ -1,0 +1,35 @@
+ <!-- Agregar al final del archivo, antes de los scripts -->
+<!-- Modal para gestión de editoriales -->
+<div class="modal fade" id="gestionEditorialesModal" tabindex="-1" aria-labelledby="gestionEditorialesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="gestionEditorialesModalLabel">Gestión de Editoriales</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <button class="btn btn-success btn-sm" onclick="mostrarModalNuevaEditorial()">
+                        <i class="bi bi-plus-circle"></i> Nueva Editorial
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="editoriales-table-body">
+                            <!-- Las editoriales se cargarán aquí dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>

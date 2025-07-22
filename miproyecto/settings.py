@@ -14,7 +14,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', '7kae9_b8b#_m-g)o1hp7i=ojuwuqlslecj0kliqf(w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['escuelatorreblanca.cl', 'www.escuelatorreblanca.cl' ,'*']
 
 # Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'biblioteca',
     'fotos',
     'profesores',
-    'rest_framework',
     'contacto',
     'panel',
 ]
